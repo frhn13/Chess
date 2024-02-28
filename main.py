@@ -16,6 +16,14 @@ running = True
 
 board = Board()
 board.print_board()
+board.move_piece(board.board_contents[1][0], 1, 0, 2, 0)
+board.move_piece(board.board_contents[2][0], 2, 0, 3, 0)
+board.move_piece(board.board_contents[3][0], 3, 0, 4, 0)
+board.move_piece(board.board_contents[0][0], 0, 0, 4, 0)
+board.move_piece(board.board_contents[1][1], 1, 1, 2, 1)
+board.move_piece(board.board_contents[0][2], 0, 2, 2, 4)
+board.move_piece(board.board_contents[0][1], 0, 1, 2, 2)
+board.print_board()
 
 while running:
     clock.tick(FPS)

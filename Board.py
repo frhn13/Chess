@@ -14,11 +14,7 @@ class Board:
             for y in range(8):
                 row.append(None)
             self.board_contents.append(row)
-        self.add_pieces()
-
-    def add_pieces(self):
         for x in range(8):
-
             colour = ""
             if x == 0 or x == 1:
                 colour = "Black"
@@ -51,3 +47,18 @@ class Board:
                 else:
                     print("None", end=", ")
             print("")
+        print("")
+
+    def move_piece(self, piece, current_row, current_column, new_row, new_column):
+        if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour == piece.colour:
+            return False
+        elif not piece.is_move_valid(new_row, new_column, self.board_contents[new_row][new_column], self.board_contents):
+            return False
+        else:
+            if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour != piece.colour:
+                piece.kill()
+            self.board_contents[new_row][new_column] = piece
+            piece.row = new_row
+            piece.column = new_column
+            self.board_contents[current_row][current_column] = None
+            return True
