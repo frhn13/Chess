@@ -13,24 +13,29 @@ clock = pg.time.Clock()
 
 # Game variables
 running = True
+game_setup = True
+current_turn = "White"
 
-board = Board()
-board.print_board()
-board.move_piece(board.board_contents[1][0], 1, 0, 2, 0)
-board.move_piece(board.board_contents[2][0], 2, 0, 3, 0)
-board.move_piece(board.board_contents[3][0], 3, 0, 4, 0)
-board.move_piece(board.board_contents[0][0], 0, 0, 4, 0)
-board.move_piece(board.board_contents[1][1], 1, 1, 2, 1)
-board.move_piece(board.board_contents[0][2], 0, 2, 2, 4)
-board.move_piece(board.board_contents[0][1], 0, 1, 2, 2)
-board.print_board()
+board = None
 
 while running:
     clock.tick(FPS)
+    if game_setup:
+        board = Board()
+        current_turn = "White"
+        board.print_board()
+        game_setup = False
+    if not game_setup:
+        current_pos = input("Choose the coordinates of the piece you want: ")
+        next_pos = input("Choose the coordinates to place at: ")
+        board.move_piece(board.board_contents[int(current_pos[0])][int(current_pos[1])],
+                         int(current_pos[0]), int(current_pos[1]), int(next_pos[0]), int(next_pos[1]), current_turn)
+        current_turn = "Black" if current_turn == "White" else "White"
+        board.print_board()
 
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            running = False
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
                 running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    running = False

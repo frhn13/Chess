@@ -49,7 +49,9 @@ class Board:
             print("")
         print("")
 
-    def move_piece(self, piece, current_row, current_column, new_row, new_column):
+    def move_piece(self, piece, current_row, current_column, new_row, new_column, current_turn):
+        if piece.colour != current_turn:
+            return False
         if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour == piece.colour:
             return False
         elif not piece.is_move_valid(new_row, new_column, self.board_contents[new_row][new_column], self.board_contents):
