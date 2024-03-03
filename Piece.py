@@ -8,7 +8,6 @@ class Piece(pg.sprite.Sprite):
         self.colour = colour
         self.row = row
         self.column = column
-        self.has_moved = False
         self.is_alive = True
 
     def check_straight(self, new_column, new_row, board_contents):
@@ -72,22 +71,22 @@ class Piece(pg.sprite.Sprite):
             return False
         if self.piece_type == "Pawn":
             if self.colour == "Black":
-                if new_row == self.row + 1 and new_column == self.column:
+                if new_row == self.row + 1 and new_column == self.column and new_space is None:
                     return True
                 elif new_row == self.row + 1 and (
                         new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
                     return True
-                elif new_row == self.row + 2 and self.row == 1:
+                elif new_row == self.row + 2 and self.row == 1 and new_space is None:
                     return True
                 else:
                     return False
             else:
-                if new_row == self.row - 1 and new_column == self.column:
+                if new_row == self.row - 1 and new_column == self.column and new_space is None:
                     return True
                 elif new_row == self.row - 1 and (
                         new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
                     return True
-                elif new_row == self.row - 2 and self.row == 6:
+                elif new_row == self.row - 2 and self.row == 6 and new_space is None:
                     return True
                 else:
                     return False

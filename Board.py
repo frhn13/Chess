@@ -50,12 +50,20 @@ class Board:
         print("")
 
     def move_piece(self, piece, current_row, current_column, new_row, new_column, current_turn):
+        if self.in_checkmate(current_turn):
+            return "GameOver"
         if piece.colour != current_turn:
-            return False
-        if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour == piece.colour:
-            return False
+            return "Failed"
+        elif self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour == piece.colour:
+            return "Failed"
         elif not piece.is_move_valid(new_row, new_column, self.board_contents[new_row][new_column], self.board_contents):
-            return False
+            return "Failed"
+        elif self.in_check(current_turn) and piece.piece_type != "King":
+            return "Failed"
+        elif self.will_be_in_check(current_turn, new_row, new_column) and piece.piece_type == "King":
+            return "Failed"
+        # elif self.in_stalemate(current_turn):
+        #     return False, "GameDrew"
         else:
             if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour != piece.colour:
                 piece.kill()
@@ -64,3 +72,65 @@ class Board:
             piece.column = new_column
             self.board_contents[current_row][current_column] = None
             return True
+
+    def in_check(self, current_turn):
+        for x in range(len(self.board_contents)):
+            for y in range(len(self.board_contents[0])):
+                if self.board_contents[x][y] is not None and self.board_contents[x][y].piece_type == "King" \
+                        and self.board_contents[x][y].colour == current_turn:
+                    for i in range(len(self.board_contents)):
+                        for j in range(len(self.board_contents[0])):
+                            if self.board_contents[i][j] is not None and \
+                                    self.board_contents[i][j].colour != self.board_contents[x][y].colour \
+                                    and self.board_contents[i][j].is_move_valid(
+                                    x, y, self.board_contents[x][y], self.board_contents):
+                                return True
+        return False
+
+    def will_be_in_check(self, current_turn, new_row, new_column):
+        for i in range(len(self.board_contents)):
+            for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and self.board_contents[i][j].colour != current_turn and \
+                        self.board_contents[i][j].is_move_valid(
+                            new_row, new_column, self.board_contents[new_row][new_column], self.board_contents):
+                    return True
+        return False
+
+    def in_checkmate(self, current_turn):
+        next_turn = "White" if current_turn == "Black" else "Black"
+        # if not self.in_check(next_turn):
+        #     print("Yay")
+        #     return False
+        for i in range(len(self.board_contents)):
+            for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and self.board_contents[i][j].piece_type == "King" and \
+                        self.board_contents[i][j].colour == current_turn:
+                    for x in range(-1, 2):
+                        for y in range(-1, 2):
+                            try:
+                                if not self.will_be_in_check(current_turn, i+x, j+y) or \
+                                    (self.board_contents[i+x][j+y] is not None and
+                                     self.board_contents[i+x][j+y].colour != self.board_contents[i][j].colour):
+                                    return False
+                            except IndexError:
+                                pass
+        return True
+
+    def in_stalemate(self, current_turn):
+        if self.in_check(current_turn):
+            return False
+        for i in range(len(self.board_contents)):
+            for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and \
+                        self.board_contents[i][j].piece_type == "King" and \
+                        self.board_contents[i][j].colour == current_turn:
+                    for x in range(-1, 2):
+                        for y in range(-1, 2):
+                            try:
+                                if not self.will_be_in_check(current_turn, i+x, j+y) or \
+                                    (self.board_contents[i+x][j+y] is not None and
+                                     self.board_contents[i+x][j+y].colour != self.board_contents[i][j].colour):
+                                    return False
+                            except IndexError:
+                                pass
+        return True
