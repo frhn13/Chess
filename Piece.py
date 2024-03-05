@@ -2,12 +2,15 @@ import pygame as pg
 
 
 class Piece(pg.sprite.Sprite):
-    def __init__(self, piece_type, colour, row, column):
+    def __init__(self, piece_type, colour, row, column, image):
         pg.sprite.Sprite.__init__(self)
         self.piece_type = piece_type
         self.colour = colour
         self.row = row
         self.column = column
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (181 + (62.5*column), 181 + (62.5*row))
         self.is_alive = True
 
     def check_straight(self, new_column, new_row, board_contents):
