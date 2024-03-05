@@ -58,6 +58,8 @@ class Board:
         print("")
 
     def move_piece(self, piece, current_row, current_column, new_row, new_column, current_turn):
+        if piece is None:
+            return "NA"
         # if self.in_checkmate(current_turn):
         #     return "GameOver"
         if piece.colour != current_turn:
@@ -74,12 +76,8 @@ class Board:
         #     return False, "GameDrew"
         else:
             if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour != piece.colour:
-                piece.kill()
-            self.board_contents[new_row][new_column] = piece
-            piece.row = new_row
-            piece.column = new_column
-            self.board_contents[current_row][current_column] = None
-            return True
+                self.board_contents[new_row][new_column].kill()
+            return "Success"
 
     def in_check(self, current_turn):
         for x in range(len(self.board_contents)):

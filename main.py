@@ -56,7 +56,6 @@ while running:
                     all_sprites.add(board.board_contents[x][y])
                     chess_pieces_sprites.add(board.board_contents[x][y])
         current_turn = "White"
-        board.print_board()
         game_setup = False
     if not game_setup:
         draw_bg(GAME_BG)
@@ -78,11 +77,27 @@ while running:
 
         if event.type == pg.MOUSEMOTION:
             pos = pg.mouse.get_pos()
-            if active_piece != None:
+            if active_piece is not None:
                 active_piece.rect.center = (pos[0], pos[1])
 
         if event.type == pg.MOUSEBUTTONUP:
-            active_piece = None
+            pos = pg.mouse.get_pos()
+            new_row = int(round((pos[1] - 181) / 62.5, 0))
+            new_column = int(round((pos[0] - 181) / 62.5, 0))
+            if active_piece is not None:
+                what_happened = board.move_piece(active_piece, active_piece.row, active_piece.column, new_row, new_column, current_turn)
+                if what_happened == "Success":
+                    old_row = active_piece.row
+                    old_column = active_piece.column
+                    board.board_contents[new_row][new_column] = active_piece
+                    active_piece.row = new_row
+                    active_piece.column = new_column
+                    active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
+                    board.board_contents[old_row][old_column] = None
+                    current_turn = "White" if current_turn == "Black" else "Black"
+                if what_happened == "Failed":
+                    active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
+                active_piece = None
 
     pg.display.update()
 

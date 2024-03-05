@@ -101,7 +101,7 @@ class Piece(pg.sprite.Sprite):
             else:
                 return False
         elif self.piece_type == "King":
-            if abs(new_row - self.row) <= 1 and abs(new_column - self.row) <= 1:
+            if abs(new_row - self.row) <= 1 and abs(new_column - self.column) <= 1:
                 return True
             else:
                 return False
