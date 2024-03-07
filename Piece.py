@@ -8,9 +8,10 @@ class Piece(pg.sprite.Sprite):
         self.colour = colour
         self.row = row
         self.column = column
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.center = (181 + (62.5*column), 181 + (62.5*row))
+        if image is not None:
+            self.image = image
+            self.rect = self.image.get_rect()
+            self.rect.center = (181 + (62.5*column), 181 + (62.5*row))
         self.is_alive = True
 
     def check_straight(self, new_column, new_row, board_contents):
@@ -46,19 +47,16 @@ class Piece(pg.sprite.Sprite):
             elif self.row < new_row and self.column > new_column:
                 for x in range(self.row + 1, new_row):
                     for y in range(new_column + 1, self.column):
-                        print(board_contents[x][y])
                         if abs(self.row - x) == abs(self.column - y) and board_contents[x][y] is not None:
                             return False
             elif self.row > new_row and self.column < new_column:
                 for x in range(new_row + 1, self.row):
                     for y in range(self.column + 1, new_column):
-                        print(board_contents[x][y])
                         if abs(self.row - x) == abs(self.column - y) and board_contents[x][y] is not None:
                             return False
             elif self.row > new_row and self.column > new_column:
                 for x in range(new_row + 1, self.row):
                     for y in range(new_column + 1, self.column):
-                        print(board_contents[x][y])
                         if abs(self.row - x) == abs(self.column - y) and board_contents[x][y] is not None:
                             return False
             else:
@@ -79,7 +77,7 @@ class Piece(pg.sprite.Sprite):
                 elif new_row == self.row + 1 and (
                         new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
                     return True
-                elif new_row == self.row + 2 and self.row == 1 and new_space is None:
+                elif new_row == self.row + 2 and self.row == 1 and new_column == self.column and new_space is None:
                     return True
                 else:
                     return False
@@ -89,7 +87,7 @@ class Piece(pg.sprite.Sprite):
                 elif new_row == self.row - 1 and (
                         new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
                     return True
-                elif new_row == self.row - 2 and self.row == 6 and new_space is None:
+                elif new_row == self.row - 2 and self.row == 6 and new_column == self.column and new_space is None:
                     return True
                 else:
                     return False

@@ -10,6 +10,10 @@ class Board:
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.white_king_pos = (7, 4)
+        self.black_king_pos = (0, 4)
+        self.no_white_pieces = 16
+        self.no_black_pieces = 16
 
     def display_board(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -68,7 +72,7 @@ class Board:
             return "Failed"
         elif not piece.is_move_valid(new_row, new_column, self.board_contents[new_row][new_column], self.board_contents):
             return "Failed"
-        elif self.in_check(current_turn) and piece.piece_type != "King":
+        elif self.in_check(current_turn, piece, new_row, new_column):
             return "Failed"
         elif self.will_be_in_check(current_turn, new_row, new_column) and piece.piece_type == "King":
             return "Failed"
@@ -77,34 +81,80 @@ class Board:
         else:
             if self.board_contents[new_row][new_column] is not None and self.board_contents[new_row][new_column].colour != piece.colour:
                 self.board_contents[new_row][new_column].kill()
+                if piece.colour == "Black":
+                    self.no_white_pieces -= 1
+                else:
+                    self.no_black_pieces -= 1
+            if piece.piece_type == "King":
+                if piece.colour == "White":
+                    self.white_king_pos = (new_row, new_column)
+                else:
+                    self.black_king_pos = (new_row, new_column)
             return "Success"
 
-    def in_check(self, current_turn):
-        for x in range(len(self.board_contents)):
-            for y in range(len(self.board_contents[0])):
-                if self.board_contents[x][y] is not None and self.board_contents[x][y].piece_type == "King" \
-                        and self.board_contents[x][y].colour == current_turn:
-                    for i in range(len(self.board_contents)):
-                        for j in range(len(self.board_contents[0])):
-                            if self.board_contents[i][j] is not None and \
-                                    self.board_contents[i][j].colour != self.board_contents[x][y].colour \
-                                    and self.board_contents[i][j].is_move_valid(
-                                    x, y, self.board_contents[x][y], self.board_contents):
-                                return True
-        return False
+    def in_check(self, current_turn, piece, new_row, new_column):
+        no_checking_pieces = 0
+        checking_pieces = []
+        if current_turn == "White":
+            x = self.white_king_pos[0]
+            y = self.white_king_pos[1]
+        else:
+            x = self.black_king_pos[0]
+            y = self.black_king_pos[1]
+        for i in range(len(self.board_contents)):
+            for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and self.board_contents[i][j].colour != \
+                        self.board_contents[x][y].colour and self.board_contents[i][j].is_move_valid(
+                        x, y, self.board_contents[x][y], self.board_contents):
+                    no_checking_pieces += 1
+                    checking_pieces.append([i, j])
+        print(checking_pieces)
+        if no_checking_pieces == 0:
+            return False
+        if no_checking_pieces > 1 and piece.piece_type != "King":
+            return True
+        if piece.piece_type == "King":
+            return self.will_be_in_check(current_turn, new_row, new_column)
+        if no_checking_pieces == 1:
+            if x == checking_pieces[0][0] and y != checking_pieces[0][1]:
+                if new_row == x:
+                    return False
+            if x != checking_pieces[0][0] and y == checking_pieces[0][1]:
+                if new_column == y:
+                    return False
+            if x != checking_pieces[0][0] and y != checking_pieces[0][1]:
+                if abs(x-new_row) == abs(y-new_column):
+                    if x > checking_pieces[0][0] and y > checking_pieces[0][1] and checking_pieces[0][0] < new_row < x \
+                            and checking_pieces[0][1] < new_column < y:
+                        return False
+                    if x > checking_pieces[0][0] and y < checking_pieces[0][1] and checking_pieces[0][0] < new_row < x \
+                            and y < new_column < checking_pieces[0][1]:
+                        return False
+                    if x < checking_pieces[0][0] and y > checking_pieces[0][1] and x < new_row < checking_pieces[0][0] \
+                            and checking_pieces[0][1] < new_column < y:
+                        return False
+                    if x < checking_pieces[0][0] and y < checking_pieces[0][1] and x < new_row < checking_pieces[0][0] \
+                            and y < new_column < checking_pieces[0][1]:
+                        return False
+            elif new_row == checking_pieces[0][0] and new_column == checking_pieces[0][1]:
+                return False
+            else:
+                return True
 
     def will_put_king_in_check(self, current_turn):
-        for x in range(len(self.board_contents)):
-            for y in range(len(self.board_contents[0])):
-                if self.board_contents[x][y] is not None and self.board_contents[x][y].piece_type == "King" \
-                        and self.board_contents[x][y].colour == current_turn:
-                    for i in range(len(self.board_contents)):
-                        for j in range(len(self.board_contents[0])):
-                            if self.board_contents[i][j] is not None and \
-                                    self.board_contents[i][j].colour != self.board_contents[x][y].colour \
-                                    and self.board_contents[i][j].is_move_valid(
-                                    x, y, self.board_contents[x][y], self.board_contents):
-                                return True
+        if current_turn == "White":
+            x = self.white_king_pos[0]
+            y = self.white_king_pos[1]
+        else:
+            x = self.black_king_pos[0]
+            y = self.black_king_pos[1]
+        for i in range(len(self.board_contents)):
+            for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and \
+                        self.board_contents[i][j].colour != self.board_contents[x][y].colour \
+                        and self.board_contents[i][j].is_move_valid(
+                        x, y, self.board_contents[x][y], self.board_contents):
+                    return True
         return False
 
     def will_be_in_check(self, current_turn, new_row, new_column):
