@@ -8,6 +8,8 @@ class Piece(pg.sprite.Sprite):
         self.colour = colour
         self.row = row
         self.column = column
+        self.has_moved = False
+        self.is_blocked = False
         if image is not None:
             self.image = image
             self.rect = self.image.get_rect()

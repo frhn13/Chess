@@ -104,6 +104,9 @@ while running:
                         all_sprites.empty()
                         game_setup = True
                         print("It is a draw!")
+                    if active_piece.piece_type == "Pawn":
+                        if current_turn == "White" and new_row == 0 or current_turn == "Black" and new_row == 7:
+                            board.upgrade_pawn(active_piece, current_turn)
                     current_turn = "White" if current_turn == "Black" else "Black"
                 if what_happened == "Failed":
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
