@@ -94,6 +94,16 @@ while running:
                     active_piece.column = new_column
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
                     board.board_contents[old_row][old_column] = None
+                    if board.in_checkmate(current_turn):
+                        chess_pieces_sprites.empty()
+                        all_sprites.empty()
+                        game_setup = True
+                        print(f"{current_turn} wins!")
+                    if board.in_stalemate(current_turn):
+                        chess_pieces_sprites.empty()
+                        all_sprites.empty()
+                        game_setup = True
+                        print("It is a draw!")
                     current_turn = "White" if current_turn == "Black" else "Black"
                 if what_happened == "Failed":
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
