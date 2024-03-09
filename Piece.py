@@ -67,32 +67,43 @@ class Piece(pg.sprite.Sprite):
             return False
         return True
 
-    def is_move_valid(self, new_row, new_column, new_space, board_contents):
+    def is_move_valid(self, new_row, new_column, new_space, board_contents, checking_king):
         if not (0 <= new_row <= 7 and 0 <= new_column <= 7):
             return False
         if new_row == self.row and new_column == self.column:
             return False
         if self.piece_type == "Pawn":
-            if self.colour == "Black":
-                if new_row == self.row + 1 and new_column == self.column and new_space is None:
+            if checking_king:
+                if self.colour == "Black" and new_row - 1 == self.row and (new_column - 1 == self.column or new_column + 1 == self.column):
                     return True
-                elif new_row == self.row + 1 and (
-                        new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
+                if self.colour == "White" and new_row + 1 == self.row and (new_column - 1 == self.column or new_column + 1 == self.column):
                     return True
-                elif new_row == self.row + 2 and self.row == 1 and new_column == self.column and new_space is None:
-                    return True
-                else:
+                if self.colour == "Black" and new_row - 1 == self.row and new_column == self.column:
                     return False
+                if self.colour == "White" and new_row + 1 == self.row and new_column == self.column:
+                    return False
+                return False
             else:
-                if new_row == self.row - 1 and new_column == self.column and new_space is None:
-                    return True
-                elif new_row == self.row - 1 and (
-                        new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
-                    return True
-                elif new_row == self.row - 2 and self.row == 6 and new_column == self.column and new_space is None:
-                    return True
+                if self.colour == "Black":
+                    if new_row == self.row + 1 and new_column == self.column and new_space is None:
+                        return True
+                    elif new_row == self.row + 1 and (
+                            new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
+                        return True
+                    elif new_row == self.row + 2 and self.row == 1 and new_column == self.column and new_space is None:
+                        return True
+                    else:
+                        return False
                 else:
-                    return False
+                    if new_row == self.row - 1 and new_column == self.column and new_space is None:
+                        return True
+                    elif new_row == self.row - 1 and (
+                            new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
+                        return True
+                    elif new_row == self.row - 2 and self.row == 6 and new_column == self.column and new_space is None:
+                        return True
+                    else:
+                        return False
         elif self.piece_type == "Knight":
             if abs(new_row - self.row) == 2 and abs(new_column - self.column) == 1:
                 return True
