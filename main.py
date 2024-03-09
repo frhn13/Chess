@@ -1,9 +1,11 @@
+import time
 from tkinter import messagebox
 import pygame as pg
 
 from Constants import *
 from Board import Board
 from Button import Button
+from csv_operations import *
 
 pg.init()
 
@@ -34,6 +36,9 @@ player1_rect = pg.Rect(280, 80, 200, 50)
 player2_rect = pg.Rect(280, 180, 200, 50)
 white_player_active = False
 black_player_active = False
+white_time = 0
+black_time = 0
+timer_started = False
 
 board = None
 active_piece = None
@@ -77,9 +82,13 @@ exit_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, exit_button_im
 play_game_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, play_game_button_img)
 main_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 300, main_menu_button_img)
 
+create_file()
+
 while running:
     clock.tick(FPS)
     if game_state == GameState.MAIN_MENU:
+        white_time = 0
+        black_time = 0
         draw_bg(MENU_BG)
         white_player = ""
         black_player = ""
@@ -153,6 +162,8 @@ while running:
         game_state = GameState.IN_GAME
 
     if game_state == GameState.POST_GAME:
+        print(white_time)
+        print(black_time)
         game_state = GameState.MAIN_MENU
 
     if game_state == GameState.IN_GAME:
@@ -162,8 +173,14 @@ while running:
         all_sprites.draw(screen)
         if current_turn == "White":
             write_text(SCREEN_WIDTH//2 - 100, 50, f"{current_turn}'s Turn", WHITE, main_font)
+            if not timer_started:
+                start_white_time = time.perf_counter()
+                timer_started = True
         else:
             write_text(SCREEN_WIDTH // 2 - 100, 50, f"{current_turn}'s Turn", BLACK, main_font)
+            if not timer_started:
+                start_black_time = time.perf_counter()
+                timer_started = True
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -196,16 +213,28 @@ while running:
                     active_piece.column = new_column
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
                     board.board_contents[old_row][old_column] = None
+                    if current_turn == "White":
+                        end_white_time = time.perf_counter()
+                        white_time += round(end_white_time - start_white_time, 2)
+                    else:
+                        end_black_time = time.perf_counter()
+                        black_time += round(end_black_time - start_black_time, 2)
+                    timer_started = False
                     if board.in_checkmate(current_turn):
                         chess_pieces_sprites.empty()
                         all_sprites.empty()
                         game_state = GameState.POST_GAME
                         print(f"{current_turn} wins!")
+                        if current_turn == "White":
+                            write_results(white_player, "Yes", white_time, black_player, "No", black_time)
+                        else:
+                            write_results(white_player, "No", white_time, black_player, "Yes", black_time)
                     if board.in_stalemate(current_turn):
                         chess_pieces_sprites.empty()
                         all_sprites.empty()
                         game_state = GameState.POST_GAME
                         print("It is a draw!")
+                        write_results(white_player, "Draw", white_time, black_player, "Draw", black_time)
                     if active_piece.piece_type == "Pawn":
                         if current_turn == "White" and new_row == 0 or current_turn == "Black" and new_row == 7:
                             board.upgrade_pawn(active_piece, current_turn)
