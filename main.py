@@ -35,6 +35,7 @@ current_turn = "White"
 white_player = ""
 black_player = ""
 player_entered = ""
+winner = ""
 player1_rect = pg.Rect(280, 80, 200, 50)
 player2_rect = pg.Rect(280, 180, 200, 50)
 white_player_active = False
@@ -99,7 +100,7 @@ start_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, start_button_img)
 leaderboard_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200, leaderboard_button_img)
 exit_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, exit_button_img)
 play_game_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, play_game_button_img)
-main_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 300, main_menu_button_img)
+main_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 320, main_menu_button_img)
 fastest_wins_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100, fastest_wins_button_img)
 most_wins_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 100, most_wins_button_img)
 personal_stats_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 100, personal_stats_button_img)
@@ -128,6 +129,7 @@ while running:
         white_player = ""
         black_player = ""
         player_entered = ""
+        winner = ""
         white_player_active = False
         black_player_active = False
         player_entered_active = False
@@ -267,7 +269,7 @@ while running:
                 else:
                     if (white_player_active and len(white_player) == 10) or (black_player_active and len(black_player) == 10):
                         messagebox.showerror("Details invalid", "Player name can't be more than 10 characters")
-                    else:
+                    elif white_player_active or black_player_active:
                         messagebox.showerror("Details invalid", "Player name can only contain numbers or letters")
         if play_game_button.display(screen):
             if white_player == black_player:
@@ -288,9 +290,6 @@ while running:
                     chess_pieces_sprites.add(board.board_contents[x][y])
         current_turn = "White"
         game_state = GameState.IN_GAME
-
-    if game_state == GameState.POST_GAME:
-        game_state = GameState.MAIN_MENU
 
     if game_state == GameState.IN_GAME:
         if in_game_state == InGameState.UPGRADE_PAWN:
@@ -339,6 +338,19 @@ while running:
                     start_black_time = time.perf_counter()
                     timer_started = True
 
+    if game_state == GameState.POST_GAME:
+        draw_bg(GAME_BG)
+        board.display_board(screen)
+        all_sprites.draw(screen)
+        if winner != "":
+            write_text(SCREEN_WIDTH // 2 - 100, 50, f"{winner} wins!", BLACK, main_font)
+        else:
+            write_text(SCREEN_WIDTH // 2 - 120, 50, f"It's a stalemate!", BLACK, main_font)
+        if main_menu_button.display(screen):
+            chess_pieces_sprites.empty()
+            all_sprites.empty()
+            game_state = GameState.MAIN_MENU
+
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
@@ -378,19 +390,14 @@ while running:
                         black_time += round(end_black_time - start_black_time, 2)
                     timer_started = False
                     if board.in_checkmate(current_turn):
-                        chess_pieces_sprites.empty()
-                        all_sprites.empty()
-                        game_state = GameState.POST_GAME
-                        print(f"{current_turn} wins!")
+                        winner = current_turn
                         if current_turn == "White":
-                            write_results(white_player, "Yes", white_time, black_player, "No", black_time)
+                            write_results(white_player, "Yes", round(white_time, 2), black_player, "No", round(black_time, 2))
                         else:
-                            write_results(white_player, "No", white_time, black_player, "Yes", black_time)
-                    if board.in_stalemate(current_turn):
-                        chess_pieces_sprites.empty()
-                        all_sprites.empty()
+                            write_results(white_player, "No", round(white_time, 2), black_player, "Yes", round(black_time, 2))
                         game_state = GameState.POST_GAME
-                        print("It is a draw!")
+                    if board.in_stalemate(current_turn):
+                        game_state = GameState.POST_GAME
                         write_results(white_player, "Draw", white_time, black_player, "Draw", black_time)
                     if active_piece.piece_type == ChessPieces.PAWN:
                         if current_turn == "White" and new_row == 0 or current_turn == "Black" and new_row == 7:
