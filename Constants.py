@@ -4,7 +4,6 @@ from enum import Enum
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 FPS = 60
-CHESS_PIECES = ["Rook", "Knight", "Bishop", "Queen", "King", "Pawn"]
 
 # Colours
 GAME_BG = (144, 201, 120)
@@ -28,6 +27,11 @@ class LeaderboardState(Enum):
     FASTEST_WINS = 3
     ENTER_PERSONAL_STATS = 4
     PERSONAL_STATS = 5
+
+
+class InGameState(Enum):
+    GAME_PLAYING = 1
+    UPGRADE_PAWN = 2
 
 
 class ChessPieces(Enum):

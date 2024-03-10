@@ -1,4 +1,3 @@
-import pygame as pg
 from Piece import Piece
 from Constants import *
 
@@ -34,23 +33,23 @@ class Board:
                 colour = "White"
                 image_pos = 0
             if x == 0 or x == 7:
-                self.board_contents[x][0] = Piece("Rook", colour, x, 0, pieces_images[image_pos][1])
-                self.board_contents[x][1] = Piece("Knight", colour, x, 1, pieces_images[image_pos][2])
-                self.board_contents[x][2] = Piece("Bishop", colour, x, 2, pieces_images[image_pos][3])
-                self.board_contents[x][3] = Piece("Queen", colour, x, 3, pieces_images[image_pos][4])
-                self.board_contents[x][4] = Piece("King", colour, x, 4, pieces_images[image_pos][5])
-                self.board_contents[x][5] = Piece("Bishop", colour, x, 5, pieces_images[image_pos][3])
-                self.board_contents[x][6] = Piece("Knight", colour, x, 6, pieces_images[image_pos][2])
-                self.board_contents[x][7] = Piece("Rook", colour, x, 7, pieces_images[image_pos][1])
+                self.board_contents[x][0] = Piece(ChessPieces.ROOK, colour, x, 0, pieces_images[image_pos][1])
+                self.board_contents[x][1] = Piece(ChessPieces.KNIGHT, colour, x, 1, pieces_images[image_pos][2])
+                self.board_contents[x][2] = Piece(ChessPieces.BISHOP, colour, x, 2, pieces_images[image_pos][3])
+                self.board_contents[x][3] = Piece(ChessPieces.QUEEN, colour, x, 3, pieces_images[image_pos][4])
+                self.board_contents[x][4] = Piece(ChessPieces.KING, colour, x, 4, pieces_images[image_pos][5])
+                self.board_contents[x][5] = Piece(ChessPieces.BISHOP, colour, x, 5, pieces_images[image_pos][3])
+                self.board_contents[x][6] = Piece(ChessPieces.KNIGHT, colour, x, 6, pieces_images[image_pos][2])
+                self.board_contents[x][7] = Piece(ChessPieces.ROOK, colour, x, 7, pieces_images[image_pos][1])
             elif x == 1 or x == 6:
-                self.board_contents[x][0] = Piece("Pawn", colour, x, 0, pieces_images[image_pos][0])
-                self.board_contents[x][1] = Piece("Pawn", colour, x, 1, pieces_images[image_pos][0])
-                self.board_contents[x][2] = Piece("Pawn", colour, x, 2, pieces_images[image_pos][0])
-                self.board_contents[x][3] = Piece("Pawn", colour, x, 3, pieces_images[image_pos][0])
-                self.board_contents[x][4] = Piece("Pawn", colour, x, 4, pieces_images[image_pos][0])
-                self.board_contents[x][5] = Piece("Pawn", colour, x, 5, pieces_images[image_pos][0])
-                self.board_contents[x][6] = Piece("Pawn", colour, x, 6, pieces_images[image_pos][0])
-                self.board_contents[x][7] = Piece("Pawn", colour, x, 7, pieces_images[image_pos][0])
+                self.board_contents[x][0] = Piece(ChessPieces.PAWN, colour, x, 0, pieces_images[image_pos][0])
+                self.board_contents[x][1] = Piece(ChessPieces.PAWN, colour, x, 1, pieces_images[image_pos][0])
+                self.board_contents[x][2] = Piece(ChessPieces.PAWN, colour, x, 2, pieces_images[image_pos][0])
+                self.board_contents[x][3] = Piece(ChessPieces.PAWN, colour, x, 3, pieces_images[image_pos][0])
+                self.board_contents[x][4] = Piece(ChessPieces.PAWN, colour, x, 4, pieces_images[image_pos][0])
+                self.board_contents[x][5] = Piece(ChessPieces.PAWN, colour, x, 5, pieces_images[image_pos][0])
+                self.board_contents[x][6] = Piece(ChessPieces.PAWN, colour, x, 6, pieces_images[image_pos][0])
+                self.board_contents[x][7] = Piece(ChessPieces.PAWN, colour, x, 7, pieces_images[image_pos][0])
 
     def print_board(self):
         for x in range(len(self.board_contents)):
@@ -63,11 +62,12 @@ class Board:
             print("")
         print("")
 
-    def upgrade_pawn(self, piece, current_turn):
-        piece.piece_type = "Queen"
-        piece.image = self.pieces_images[0][4] if current_turn == "White" else self.pieces_images[1][4]
+    def upgrade_pawn(self, piece, current_turn, chess_piece):
+        piece.piece_type = chess_piece
+        piece_colour = 0 if current_turn == "Black" else 1
+        piece.image = self.pieces_images[piece_colour][chess_piece.value]
 
-    def move_piece(self, piece, current_row, current_column, new_row, new_column, current_turn):
+    def move_piece(self, piece, new_row, new_column, current_turn):
         try:
             self.are_pawns_stuck(current_turn)
             if piece is None:
@@ -82,9 +82,9 @@ class Board:
                 return "Failed"
             elif self.in_check(current_turn, piece, new_row, new_column):
                 return "Failed"
-            elif piece.piece_type == "King" and self.will_be_in_check(current_turn, new_row, new_column):
+            elif piece.piece_type == ChessPieces.KING and self.will_be_in_check(current_turn, new_row, new_column):
                 return "Failed"
-            elif piece.piece_type != "King" and self.will_put_king_in_check(piece, new_row, new_column, current_turn):
+            elif piece.piece_type != ChessPieces.KING and self.will_put_king_in_check(piece, new_row, new_column, current_turn):
                 return "Failed"
             else:
                 if self.board_contents[new_row][new_column] is not None and \
@@ -94,7 +94,7 @@ class Board:
                         self.no_white_pieces -= 1
                     else:
                         self.no_black_pieces -= 1
-                if piece.piece_type == "King":
+                if piece.piece_type == ChessPieces.KING:
                     if piece.colour == "White":
                         self.white_king_pos = (new_row, new_column)
                     else:
@@ -107,7 +107,7 @@ class Board:
     def are_pawns_stuck(self, current_turn):
         for i in range(len(self.board_contents)):
             for j in range(len(self.board_contents[0])):
-                if self.board_contents[i][j] is not None and self.board_contents[i][j].piece_type == "Pawn" and self.board_contents[i][j].colour == current_turn:
+                if self.board_contents[i][j] is not None and self.board_contents[i][j].piece_type == ChessPieces.PAWN and self.board_contents[i][j].colour == current_turn:
                     if (current_turn == "White" and self.board_contents[i-1][j] is not None) or (current_turn == "Black" and self.board_contents[i+1][j] is not None):
                         self.board_contents[i][j].is_blocked = True
                     else:
@@ -129,14 +129,11 @@ class Board:
                         x, y, self.board_contents[x][y], self.board_contents, False):
                     no_checking_pieces += 1
                     checking_pieces.append([i, j])
-        print(checking_pieces)
-        print(new_row)
-        print(new_column)
         if no_checking_pieces == 0:
             return False
-        if no_checking_pieces > 1 and piece.piece_type != "King":
+        if no_checking_pieces > 1 and piece.piece_type != ChessPieces.KING:
             return True
-        if piece.piece_type == "King":
+        if piece.piece_type == ChessPieces.KING:
             return self.will_be_in_check(current_turn, new_row, new_column)
         if no_checking_pieces == 1:
             if x == checking_pieces[0][0] and y != checking_pieces[0][1]:
@@ -180,18 +177,38 @@ class Board:
                         piece.row, piece.column, self.board_contents[piece.row][piece.column], self.board_contents, False):
                     if piece.row == x and piece.column != y \
                             and new_row != piece.row and new_row != i and new_column != j and \
-                            (self.board_contents[i][j].piece_type == "Rook" or
-                             self.board_contents[i][j].piece_type == "Queen"):
+                            (self.board_contents[i][j].piece_type == ChessPieces.ROOK or
+                             self.board_contents[i][j].piece_type == ChessPieces.QUEEN):
                         return True
                     if piece.row != x and piece.column == y \
                             and new_column != piece.column and new_row != i and new_column != j \
-                            and (self.board_contents[i][j].piece_type == "Rook" or
-                                 self.board_contents[i][j].piece_type == "Queen"):
+                            and (self.board_contents[i][j].piece_type == ChessPieces.ROOK or
+                                 self.board_contents[i][j].piece_type == ChessPieces.QUEEN):
                         return True
                     if abs(piece.row - x) == abs(piece.column - y) and abs(piece.row - i) == abs(piece.column - j) \
                             and (new_row != i or new_column != j) and abs(x - i) == abs(y - j) and \
-                            piece.piece_type != "Bishop" and (self.board_contents[i][j].piece_type == "Bishop" or
-                                                              self.board_contents[i][j].piece_type == "Queen"):
+                            (self.board_contents[i][j].piece_type == ChessPieces.BISHOP or
+                             self.board_contents[i][j].piece_type == ChessPieces.QUEEN):
+                        if x < i and y < j:
+                            for pos_x in range(x+1, i):
+                                for pos_y in range(y+1, j):
+                                    if new_row == pos_x and new_column == pos_y:
+                                        return False
+                        if x < i and y > j:
+                            for pos_x in range(x+1, i):
+                                for pos_y in range(j+1, y):
+                                    if new_row == pos_x and new_column == pos_y:
+                                        return False
+                        if x > i and y < j:
+                            for pos_x in range(i+1, x):
+                                for pos_y in range(y+1, j):
+                                    if new_row == pos_x and new_column == pos_y:
+                                        return False
+                        if x > i and y > j:
+                            for pos_x in range(i+1, x):
+                                for pos_y in range(j+1, y):
+                                    if new_row == pos_x and new_column == pos_y:
+                                        return False
                         return True
 
         return False
@@ -266,47 +283,55 @@ class Board:
                                         self.board_contents[i][j].is_move_valid(pos, y, self.board_contents[pos][y], self.board_contents, False) and i != x and j != y:
                                     return False
                     # Code to see if king can be saved diagonally
-                    """if x != checking_pieces[0][0] and y != checking_pieces[0][1] and self.board_contents[checking_pieces[0][0]][checking_pieces[0][1]].piece_type != "Knight":
+                    if x != checking_pieces[0][0] and y != checking_pieces[0][1] and self.board_contents[checking_pieces[0][0]][checking_pieces[0][1]].piece_type != ChessPieces.KNIGHT:
                         if x < checking_pieces[0][0] and y < checking_pieces[0][1]:
-                            for pos in range(x+1, checking_pieces[0][0]):
-                                if self.board_contents[i][j] is not None and (self.board_contents[pos][y+(pos-x)] is None or
-                                                                              self.board_contents[i][j].colour !=
-                                        self.board_contents[pos][y+(pos-x)].colour) and \
-                                        self.board_contents[i][j].is_move_valid(
-                                            pos, y+(pos-x),
-                                            self.board_contents[pos][y+(pos-x)],
-                                            self.board_contents):
-                                    return False
+                            for pos_x in range(x + 1, checking_pieces[0][0]):
+                                for pos_y in range(y + 1, checking_pieces[0][1]):
+                                    if self.board_contents[i][j] is not None and (
+                                            self.board_contents[pos_x][pos_y] is None or
+                                            self.board_contents[i][j].colour !=
+                                            self.board_contents[pos_x][pos_y].colour) and \
+                                            self.board_contents[i][j].is_move_valid(
+                                                pos_x, pos_y,
+                                                self.board_contents[pos_x][pos_y],
+                                                self.board_contents, False):
+                                        return False
                         if x < checking_pieces[0][0] and y > checking_pieces[0][1]:
-                            for pos in range(x+1, checking_pieces[0][0]):
-                                if self.board_contents[i][j] is not None and (self.board_contents[pos][checking_pieces[0][1]+(pos-x)] is None or
-                                                                              self.board_contents[i][j].colour !=
-                                        self.board_contents[pos][checking_pieces[0][1]+(pos-x)].colour) and \
-                                        self.board_contents[i][j].is_move_valid(
-                                            pos, checking_pieces[0][1]+(pos-x),
-                                            self.board_contents[pos][checking_pieces[0][1]+(pos-x)],
-                                            self.board_contents):
-                                    return False
+                            for pos_x in range(x + 1, checking_pieces[0][0]):
+                                for pos_y in range(checking_pieces[0][1] + 1, y):
+                                    if self.board_contents[i][j] is not None and (
+                                            self.board_contents[pos_x][pos_y] is None or
+                                            self.board_contents[i][j].colour !=
+                                            self.board_contents[pos_x][pos_y].colour) and \
+                                            self.board_contents[i][j].is_move_valid(
+                                                pos_x, pos_y,
+                                                self.board_contents[pos_x][pos_y],
+                                                self.board_contents, False):
+                                        return False
                         if x > checking_pieces[0][0] and y < checking_pieces[0][1]:
-                            for pos in range(checking_pieces[0][0]+1, x):
-                                if self.board_contents[i][j] is not None and (self.board_contents[pos][y+(pos-checking_pieces[0][0])] is None or
-                                                                              self.board_contents[i][j].colour !=
-                                        self.board_contents[pos][y+(pos-checking_pieces[0][0])].colour) and \
-                                        self.board_contents[i][j].is_move_valid(
-                                            pos, y+(pos-checking_pieces[0][0]),
-                                            self.board_contents[pos][y+(pos-checking_pieces[0][0])],
-                                            self.board_contents):
-                                    return False
+                            for pos_x in range(checking_pieces[0][0] + 1, x):
+                                for pos_y in range(y + 1, checking_pieces[0][1]):
+                                    if self.board_contents[i][j] is not None and (
+                                            self.board_contents[pos_x][pos_y] is None or
+                                            self.board_contents[i][j].colour !=
+                                            self.board_contents[pos_x][pos_y].colour) and \
+                                            self.board_contents[i][j].is_move_valid(
+                                                pos_x, pos_y,
+                                                self.board_contents[pos_x][pos_y],
+                                                self.board_contents, False):
+                                        return False
                         if x > checking_pieces[0][0] and y > checking_pieces[0][1]:
-                            for pos in range(checking_pieces[0][0]+1, x):
-                                if self.board_contents[i][j] is not None and (self.board_contents[pos][checking_pieces[0][1]+(pos-checking_pieces[0][0])] is None or
-                                                                              self.board_contents[i][j].colour !=
-                                        self.board_contents[pos][checking_pieces[0][1]+(pos-checking_pieces[0][0])].colour) and \
-                                        self.board_contents[i][j].is_move_valid(
-                                            pos, checking_pieces[0][1]+(pos-checking_pieces[0][0]),
-                                            self.board_contents[pos][checking_pieces[0][1]+(pos-checking_pieces[0][0])],
-                                            self.board_contents):
-                                    return False"""
+                            for pos_x in range(checking_pieces[0][0] + 1, x):
+                                for pos_y in range(checking_pieces[0][1] + 1, y):
+                                    if self.board_contents[i][j] is not None and (
+                                            self.board_contents[pos_x][pos_y] is None or
+                                            self.board_contents[i][j].colour !=
+                                            self.board_contents[pos_x][pos_y].colour) and \
+                                            self.board_contents[i][j].is_move_valid(
+                                                pos_x, pos_y,
+                                                self.board_contents[pos_x][pos_y],
+                                                self.board_contents, False):
+                                        return False
         for i in range(-1, 2):
             for j in range(-1, 2):
                 try:

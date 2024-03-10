@@ -29,6 +29,7 @@ clock = pg.time.Clock()
 running = True
 game_state = GameState.MAIN_MENU
 leaderboard_state = LeaderboardState.MENU
+in_game_state = InGameState.GAME_PLAYING
 game_setup = True
 current_turn = "White"
 white_player = ""
@@ -42,6 +43,7 @@ player_entered_active = False
 white_time = 0
 black_time = 0
 timer_started = False
+pawn_to_upgrade = None
 
 board = None
 active_piece = None
@@ -79,6 +81,15 @@ most_wins_button_img = pg.transform.scale(pg.image.load("img/most_wins_btn.png")
 personal_stats_button_img = pg.transform.scale(pg.image.load("img/personal_stats_btn.png"), (261, 99))
 view_personal_stats_button_img = pg.transform.scale(pg.image.load("img/view_personal_stats_btn.png"), (261, 99))
 
+white_rook_button_img = pg.transform.scale(pg.image.load("img/white_rook.jpg"), (100, 100))
+white_knight_button_img = pg.transform.scale(pg.image.load("img/white_knight.jpg"), (100, 100))
+white_bishop_button_img = pg.transform.scale(pg.image.load("img/white_bishop.jpg"), (100, 100))
+white_queen_button_img = pg.transform.scale(pg.image.load("img/white_queen.jpg"), (100, 100))
+black_rook_button_img = pg.transform.scale(pg.image.load("img/black_rook.jpg"), (100, 100))
+black_knight_button_img = pg.transform.scale(pg.image.load("img/black_knight.jpg"), (100, 100))
+black_bishop_button_img = pg.transform.scale(pg.image.load("img/black_bishop.jpg"), (100, 100))
+black_queen_button_img = pg.transform.scale(pg.image.load("img/black_queen.jpg"), (100, 100))
+
 # Make the sprite groups
 all_sprites = pg.sprite.Group()
 chess_pieces_sprites = pg.sprite.Group()
@@ -96,6 +107,15 @@ main_menu_leaderboard_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 
 leaderboard_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 300, leaderboard_button_img)
 view_personal_stats_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, view_personal_stats_button_img)
 personal_stats_leaderboard_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, leaderboard_button_img)
+
+white_rook_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 200, white_rook_button_img)
+white_knight_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 200, white_knight_button_img)
+white_bishop_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 200, white_bishop_button_img)
+white_queen_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 + 200, white_queen_button_img)
+black_rook_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 200, black_rook_button_img)
+black_knight_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 200, black_knight_button_img)
+black_bishop_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 200, black_bishop_button_img)
+black_queen_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 + 200, black_queen_button_img)
 
 create_file()
 
@@ -273,20 +293,51 @@ while running:
         game_state = GameState.MAIN_MENU
 
     if game_state == GameState.IN_GAME:
-        draw_bg(GAME_BG)
-        board.display_board(screen)
-        all_sprites.update()
-        all_sprites.draw(screen)
-        if current_turn == "White":
-            write_text(SCREEN_WIDTH//2 - 100, 50, f"{current_turn}'s Turn", WHITE, main_font)
-            if not timer_started:
-                start_white_time = time.perf_counter()
-                timer_started = True
-        else:
-            write_text(SCREEN_WIDTH // 2 - 100, 50, f"{current_turn}'s Turn", BLACK, main_font)
-            if not timer_started:
-                start_black_time = time.perf_counter()
-                timer_started = True
+        if in_game_state == InGameState.UPGRADE_PAWN:
+            draw_bg(GAME_BG)
+            write_text(SCREEN_WIDTH // 2 - 300, 50, "Choose piece to upgrade pawn to", BLACK, title_font)
+            if current_turn == "Black":
+                if white_rook_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.ROOK)
+                    in_game_state = InGameState.GAME_PLAYING
+                if white_knight_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.KNIGHT)
+                    in_game_state = InGameState.GAME_PLAYING
+                if white_bishop_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.BISHOP)
+                    in_game_state = InGameState.GAME_PLAYING
+                if white_queen_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.QUEEN)
+                    in_game_state = InGameState.GAME_PLAYING
+            else:
+                if black_rook_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.ROOK)
+                    in_game_state = InGameState.GAME_PLAYING
+                if black_knight_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.KNIGHT)
+                    in_game_state = InGameState.GAME_PLAYING
+                if black_bishop_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.BISHOP)
+                    in_game_state = InGameState.GAME_PLAYING
+                if black_queen_button.display(screen):
+                    board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.QUEEN)
+                    in_game_state = InGameState.GAME_PLAYING
+
+        if in_game_state == InGameState.GAME_PLAYING:
+            draw_bg(GAME_BG)
+            board.display_board(screen)
+            all_sprites.update()
+            all_sprites.draw(screen)
+            if current_turn == "White":
+                write_text(SCREEN_WIDTH//2 - 100, 50, f"{current_turn}'s Turn", WHITE, main_font)
+                if not timer_started:
+                    start_white_time = time.perf_counter()
+                    timer_started = True
+            else:
+                write_text(SCREEN_WIDTH // 2 - 100, 50, f"{current_turn}'s Turn", BLACK, main_font)
+                if not timer_started:
+                    start_black_time = time.perf_counter()
+                    timer_started = True
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -310,7 +361,7 @@ while running:
             new_row = int(round((pos[1] - 181) / 62.5, 0))
             new_column = int(round((pos[0] - 181) / 62.5, 0))
             if active_piece is not None:
-                what_happened = board.move_piece(active_piece, active_piece.row, active_piece.column, new_row, new_column, current_turn)
+                what_happened = board.move_piece(active_piece, new_row, new_column, current_turn)
                 if what_happened == "Success":
                     old_row = active_piece.row
                     old_column = active_piece.column
@@ -341,9 +392,10 @@ while running:
                         game_state = GameState.POST_GAME
                         print("It is a draw!")
                         write_results(white_player, "Draw", white_time, black_player, "Draw", black_time)
-                    if active_piece.piece_type == "Pawn":
+                    if active_piece.piece_type == ChessPieces.PAWN:
                         if current_turn == "White" and new_row == 0 or current_turn == "Black" and new_row == 7:
-                            board.upgrade_pawn(active_piece, current_turn)
+                            pawn_to_upgrade = active_piece
+                            in_game_state = InGameState.UPGRADE_PAWN
                     current_turn = "White" if current_turn == "Black" else "Black"
                 if what_happened == "Failed":
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))

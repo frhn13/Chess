@@ -1,5 +1,7 @@
 import pygame as pg
 
+from Constants import *
+
 
 class Piece(pg.sprite.Sprite):
     def __init__(self, piece_type, colour, row, column, image):
@@ -72,7 +74,7 @@ class Piece(pg.sprite.Sprite):
             return False
         if new_row == self.row and new_column == self.column:
             return False
-        if self.piece_type == "Pawn":
+        if self.piece_type == ChessPieces.PAWN:
             if checking_king:
                 if self.colour == "Black" and new_row - 1 == self.row and (new_column - 1 == self.column or new_column + 1 == self.column):
                     return True
@@ -104,23 +106,23 @@ class Piece(pg.sprite.Sprite):
                         return True
                     else:
                         return False
-        elif self.piece_type == "Knight":
+        elif self.piece_type == ChessPieces.KNIGHT:
             if abs(new_row - self.row) == 2 and abs(new_column - self.column) == 1:
                 return True
             elif abs(new_row - self.row) == 1 and abs(new_column - self.column) == 2:
                 return True
             else:
                 return False
-        elif self.piece_type == "King":
+        elif self.piece_type == ChessPieces.KING:
             if abs(new_row - self.row) <= 1 and abs(new_column - self.column) <= 1:
                 return True
             else:
                 return False
-        elif self.piece_type == "Rook":
+        elif self.piece_type == ChessPieces.ROOK:
             return self.check_straight(new_column, new_row, board_contents)
-        elif self.piece_type == "Bishop":
+        elif self.piece_type == ChessPieces.BISHOP:
             return self.check_diagonal(new_column, new_row, board_contents)
-        elif self.piece_type == "Queen":
+        elif self.piece_type == ChessPieces.QUEEN:
             straight_valid = self.check_straight(new_column, new_row, board_contents)
             diagonal_valid = self.check_diagonal(new_column, new_row, board_contents)
             return straight_valid or diagonal_valid
