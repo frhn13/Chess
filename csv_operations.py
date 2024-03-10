@@ -30,11 +30,14 @@ def fastest_wins():
 
 def most_wins():
     df = pd.read_csv(file)
+    df = df[df["Winner"] == "Yes"]
     player_group = df.groupby("Player")
     num_winners = player_group["Winner"].apply(lambda x: x.str.contains("Yes").sum()).values.tolist()
     player_details = player_group.groups  # Gets all players
     player_list = list(player_details.keys())  # Finds all player names in the aggregate
-    return list(zip(player_list, num_winners))  # Returns list of tuples of player and no of wins
+    winning_players = list(zip(player_list, num_winners))  # Returns list of tuples of player and no of wins
+    winning_players.sort(key=lambda x: x[1], reverse=True)  # Sorts by no of wins
+    return winning_players[0: 5]
 
 
 def personal_stats(player):

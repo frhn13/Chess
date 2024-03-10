@@ -28,14 +28,17 @@ clock = pg.time.Clock()
 # Game variables
 running = True
 game_state = GameState.MAIN_MENU
+leaderboard_state = LeaderboardState.MENU
 game_setup = True
 current_turn = "White"
 white_player = ""
 black_player = ""
+player_entered = ""
 player1_rect = pg.Rect(280, 80, 200, 50)
 player2_rect = pg.Rect(280, 180, 200, 50)
 white_player_active = False
 black_player_active = False
+player_entered_active = False
 white_time = 0
 black_time = 0
 timer_started = False
@@ -45,6 +48,7 @@ active_piece = None
 
 # Fonts
 main_font = pg.font.SysFont("Futura", 40)
+title_font = pg.font.SysFont("Futura", 60)
 
 # Images
 board_img = pg.transform.scale(pg.image.load("img/chess_board.jpg"), (500, 500))
@@ -70,6 +74,10 @@ leaderboard_button_img = pg.transform.scale(pg.image.load("img/leaderboard_btn.p
 exit_button_img = pg.transform.scale(pg.image.load("img/exit_btn.png"), (261, 99))
 main_menu_button_img = pg.transform.scale(pg.image.load("img/menu_btn.png"), (261, 99))
 play_game_button_img = pg.transform.scale(pg.image.load("img/play_game_btn.png"), (261, 99))
+fastest_wins_button_img = pg.transform.scale(pg.image.load("img/fastest_wins_btn.png"), (261, 99))
+most_wins_button_img = pg.transform.scale(pg.image.load("img/most_wins_btn.png"), (261, 99))
+personal_stats_button_img = pg.transform.scale(pg.image.load("img/personal_stats_btn.png"), (261, 99))
+view_personal_stats_button_img = pg.transform.scale(pg.image.load("img/view_personal_stats_btn.png"), (261, 99))
 
 # Make the sprite groups
 all_sprites = pg.sprite.Group()
@@ -81,6 +89,13 @@ leaderboard_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200, leaderb
 exit_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, exit_button_img)
 play_game_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, play_game_button_img)
 main_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 300, main_menu_button_img)
+fastest_wins_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 100, fastest_wins_button_img)
+most_wins_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 100, most_wins_button_img)
+personal_stats_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 100, personal_stats_button_img)
+main_menu_leaderboard_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 + 100, main_menu_button_img)
+leaderboard_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 300, leaderboard_button_img)
+view_personal_stats_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, view_personal_stats_button_img)
+personal_stats_leaderboard_menu_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, leaderboard_button_img)
 
 create_file()
 
@@ -92,8 +107,10 @@ while running:
         draw_bg(MENU_BG)
         white_player = ""
         black_player = ""
+        player_entered = ""
         white_player_active = False
         black_player_active = False
+        player_entered_active = False
         if start_button.display(screen):
             game_state = GameState.USERNAMES
         if leaderboard_button.display(screen):
@@ -102,7 +119,98 @@ while running:
             running = False
 
     if game_state == GameState.LEADERBOARD:
-        game_state = GameState.MAIN_MENU
+        if leaderboard_state == LeaderboardState.MENU:
+            draw_bg(MENU_BG)
+            if fastest_wins_button.display(screen):
+                leaderboard_state = LeaderboardState.FASTEST_WINS
+            if most_wins_button.display(screen):
+                leaderboard_state = LeaderboardState.MOST_WINS
+            if personal_stats_button.display(screen):
+                leaderboard_state = LeaderboardState.ENTER_PERSONAL_STATS
+            if main_menu_leaderboard_button.display(screen):
+                game_state = GameState.MAIN_MENU
+                leaderboard_state = LeaderboardState.MENU
+
+        if leaderboard_state == LeaderboardState.FASTEST_WINS:
+            draw_bg(MENU_BG)
+            fastest_wins_list = fastest_wins()
+            write_text(SCREEN_WIDTH//2 - 200, 50, f"Top {len(fastest_wins_list)} Fastest Wins", BLACK, title_font)
+            for x in range(len(fastest_wins_list)):
+                write_text(SCREEN_WIDTH//2 - 200, 150 + (x*100), f"Player: {fastest_wins_list[x][0]}, Time: {fastest_wins_list[x][1]} seconds", BLACK, main_font)
+            if leaderboard_menu_button.display(screen):
+                leaderboard_state = LeaderboardState.MENU
+
+        if leaderboard_state == LeaderboardState.MOST_WINS:
+            draw_bg(MENU_BG)
+            most_wins_list = most_wins()
+            write_text(SCREEN_WIDTH // 2 - 300, 50, f"Top {len(most_wins_list)} Players with Most Wins", BLACK, title_font)
+            for x in range(len(most_wins_list)):
+                write_text(SCREEN_WIDTH // 2 - 200, 150 + (x * 100),
+                           f"Player: {most_wins_list[x][0]}, Wins: {most_wins_list[x][1]}", BLACK,
+                           main_font)
+            if leaderboard_menu_button.display(screen):
+                leaderboard_state = LeaderboardState.MENU
+
+        if leaderboard_state == LeaderboardState.ENTER_PERSONAL_STATS:
+            draw_bg(MENU_BG)
+            pg.draw.rect(screen, WHITE, player1_rect)
+            write_text(100, 100, f"Enter Player: {player_entered}", BLACK, main_font)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    if player1_rect.collidepoint(event.pos):
+                        player_entered_active = True
+                    else:
+                        player_entered_active = False
+                if event.type == pg.KEYDOWN:
+                    # Can only be alphanumeric
+                    if event.key == pg.K_ESCAPE:
+                        running = False
+                    elif (97 <= event.key <= 122 or 48 <= event.key <= 57) and player_entered_active and len(
+                            player_entered) < 10:
+                        player_entered += event.unicode
+                    elif event.key == pg.K_BACKSPACE:
+                        if player_entered_active:
+                            player_entered = player_entered[:-1]
+            if view_personal_stats_button.display(screen):
+                if len(player_entered) > 0:
+                    leaderboard_state = LeaderboardState.PERSONAL_STATS
+                else:
+                    messagebox.showerror("Details Invalid", "Please enter a player name")
+            if personal_stats_leaderboard_menu_button.display(screen):
+                player_entered = ""
+                player_entered_active = False
+                leaderboard_state = LeaderboardState.MENU
+
+        if leaderboard_state == LeaderboardState.PERSONAL_STATS:
+            draw_bg(MENU_BG)
+            num_wins, num_losses, num_stalemates, fastest_win = personal_stats(player_entered)
+            write_text(SCREEN_WIDTH // 2 - 150, 50, f"{player_entered}'s Statistics", BLACK, title_font)
+            try:
+                write_text(SCREEN_WIDTH // 2 - 150, 150, f"Number of Wins: {num_wins[0]}", BLACK,
+                           main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 150, f"Number of Wins: 0", BLACK, main_font)
+            try:
+                write_text(SCREEN_WIDTH // 2 - 150, 250, f"Number of Losses: {num_losses[0]}", BLACK,
+                           main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 250, f"Number of Losses: 0", BLACK, main_font)
+            try:
+                write_text(SCREEN_WIDTH // 2 - 150, 350, f"Number of Stalemates: {num_stalemates[0]}", BLACK,
+                           main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 350, f"Number of Stalemates: 0", BLACK, main_font)
+            try:
+                write_text(SCREEN_WIDTH // 2 - 150, 450, f"Fastest Win: {fastest_win[0][1]} seconds", BLACK,
+                           main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 450, "Fastest Win: None", BLACK, main_font)
+            if leaderboard_menu_button.display(screen):
+                player_entered = ""
+                player_entered_active = False
+                leaderboard_state = LeaderboardState.ENTER_PERSONAL_STATS
 
     if game_state == GameState.USERNAMES:
         draw_bg(MENU_BG)
@@ -162,8 +270,6 @@ while running:
         game_state = GameState.IN_GAME
 
     if game_state == GameState.POST_GAME:
-        print(white_time)
-        print(black_time)
         game_state = GameState.MAIN_MENU
 
     if game_state == GameState.IN_GAME:

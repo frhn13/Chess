@@ -20,3 +20,20 @@ class GameState(Enum):
     GAME_SETUP = 4
     IN_GAME = 5
     POST_GAME = 6
+
+
+class LeaderboardState(Enum):
+    MENU = 1
+    MOST_WINS = 2
+    FASTEST_WINS = 3
+    ENTER_PERSONAL_STATS = 4
+    PERSONAL_STATS = 5
+
+
+class ChessPieces(Enum):
+    ROOK = 1
+    KNIGHT = 2
+    BISHOP = 3
+    QUEEN = 4
+    KING = 5
+    PAWN = 6
