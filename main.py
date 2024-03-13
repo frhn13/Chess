@@ -421,6 +421,20 @@ while running:
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
                     # Old position in the list becomes blank
                     board.board_contents[old_row][old_column] = None
+                    if active_piece.piece_type == ChessPieces.KING and old_column == 4 and new_column == 6 and new_row == old_row:
+                        rook_piece = board.board_contents[old_row][7]
+                        rook_piece.row = old_row
+                        rook_piece.column = 5
+                        board.board_contents[old_row][5] = rook_piece
+                        rook_piece.rect.center = (181 + (62.5 * 5), 181 + (62.5 * old_row))
+                        board.board_contents[old_row][7] = None
+                    if active_piece.piece_type == ChessPieces.KING and old_column == 4 and new_column == 2 and new_row == old_row:
+                        rook_piece = board.board_contents[old_row][0]
+                        rook_piece.row = old_row
+                        rook_piece.column = 3
+                        board.board_contents[old_row][3] = rook_piece
+                        rook_piece.rect.center = (181 + (62.5 * 3), 181 + (62.5 * old_row))
+                        board.board_contents[old_row][0] = None
                     if current_turn == "White":
                         # Ends timer for the current turn and adds it onto the overall time taken for each player
                         end_white_time = time.perf_counter()

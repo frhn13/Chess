@@ -15,7 +15,7 @@ class Piece(pg.sprite.Sprite):
         if image is not None:
             self.image = image
             self.rect = self.image.get_rect()
-            self.rect.center = (181 + (62.5*column), 181 + (62.5*row))
+            self.rect.center = (181 + (62.5 * column), 181 + (62.5 * row))
         self.is_alive = True
 
     def check_straight(self, new_column, new_row, board_contents):
@@ -76,9 +76,11 @@ class Piece(pg.sprite.Sprite):
             return False
         if self.piece_type == ChessPieces.PAWN:
             if checking_king:
-                if self.colour == "Black" and new_row - 1 == self.row and (new_column - 1 == self.column or new_column + 1 == self.column):
+                if self.colour == "Black" and new_row - 1 == self.row and (
+                        new_column - 1 == self.column or new_column + 1 == self.column):
                     return True
-                if self.colour == "White" and new_row + 1 == self.row and (new_column - 1 == self.column or new_column + 1 == self.column):
+                if self.colour == "White" and new_row + 1 == self.row and (
+                        new_column - 1 == self.column or new_column + 1 == self.column):
                     return True
                 if self.colour == "Black" and new_row - 1 == self.row and new_column == self.column:
                     return False
@@ -114,10 +116,22 @@ class Piece(pg.sprite.Sprite):
             else:
                 return False
         elif self.piece_type == ChessPieces.KING:
+            print(f"{new_row} {self.row}")
+            print(f"{new_column} {self.column}")
             if abs(new_row - self.row) <= 1 and abs(new_column - self.column) <= 1:
                 return True
-            else:
-                return False
+            if new_row == self.row and new_column == 6 and board_contents[self.row][5] is None and \
+                    board_contents[self.row][6] is None and board_contents[self.row][7] is not None and \
+                    board_contents[self.row][7].piece_type == ChessPieces.ROOK and board_contents[self.row][
+                7].colour == self.colour and not self.has_moved and not board_contents[self.row][7].has_moved:
+                return True
+            if new_row == self.row and new_column == 2 and board_contents[self.row][1] is None and \
+                    board_contents[self.row][2] is None and board_contents[self.row][3] is None and \
+                    board_contents[self.row][0] is not None and \
+                    board_contents[self.row][0].piece_type == ChessPieces.ROOK and board_contents[self.row][
+                0].colour == self.colour and not self.has_moved and not board_contents[self.row][0].has_moved:
+                return True
+            return False
         elif self.piece_type == ChessPieces.ROOK:
             return self.check_straight(new_column, new_row, board_contents)
         elif self.piece_type == ChessPieces.BISHOP:
