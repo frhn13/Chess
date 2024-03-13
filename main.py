@@ -72,6 +72,7 @@ black_king_img = pg.transform.scale(pg.image.load("img/black_king.jpg"), (45, 45
 pieces_images = [[white_pawn_img, white_rook_img, white_knight_img, white_bishop_img, white_queen_img, white_king_img],
                  [black_pawn_img, black_rook_img, black_knight_img, black_bishop_img, black_queen_img, black_king_img]]
 
+# Button images
 start_button_img = pg.transform.scale(pg.image.load("img/start_btn.png"), (261, 99))
 leaderboard_button_img = pg.transform.scale(pg.image.load("img/leaderboard_btn.png"), (261, 99))
 exit_button_img = pg.transform.scale(pg.image.load("img/exit_btn.png"), (261, 99))
@@ -118,11 +119,13 @@ black_knight_button = Button(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 200, 
 black_bishop_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 200, black_bishop_button_img)
 black_queen_button = Button(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 + 200, black_queen_button_img)
 
+# Creates csv file if it doesn't exist
 create_file()
 
 while running:
     clock.tick(FPS)
     if game_state == GameState.MAIN_MENU:
+        # Initialises game variables when main menu loads
         white_time = 0
         black_time = 0
         draw_bg(MENU_BG)
@@ -133,6 +136,8 @@ while running:
         white_player_active = False
         black_player_active = False
         player_entered_active = False
+        write_text(SCREEN_WIDTH // 2 - 75, 50, "Chess!", BLACK, title_font)
+        # Can go to leaderboard or begin game from here
         if start_button.display(screen):
             game_state = GameState.USERNAMES
         if leaderboard_button.display(screen):
@@ -143,44 +148,55 @@ while running:
     if game_state == GameState.LEADERBOARD:
         if leaderboard_state == LeaderboardState.MENU:
             draw_bg(MENU_BG)
+            # User can choose between players with fastest wins, most wins or personal stats on the leaderboard
             if fastest_wins_button.display(screen):
                 leaderboard_state = LeaderboardState.FASTEST_WINS
             if most_wins_button.display(screen):
                 leaderboard_state = LeaderboardState.MOST_WINS
             if personal_stats_button.display(screen):
                 leaderboard_state = LeaderboardState.ENTER_PERSONAL_STATS
-            if main_menu_leaderboard_button.display(screen):
+            if main_menu_leaderboard_button.display(screen):  # Can also return to main menu
                 game_state = GameState.MAIN_MENU
                 leaderboard_state = LeaderboardState.MENU
 
         if leaderboard_state == LeaderboardState.FASTEST_WINS:
             draw_bg(MENU_BG)
+            # Displays top five quickest chess wins
             fastest_wins_list = fastest_wins()
-            write_text(SCREEN_WIDTH//2 - 200, 50, f"Top {len(fastest_wins_list)} Fastest Wins", BLACK, title_font)
-            for x in range(len(fastest_wins_list)):
-                write_text(SCREEN_WIDTH//2 - 200, 150 + (x*100), f"Player: {fastest_wins_list[x][0]}, Time: {fastest_wins_list[x][1]} seconds", BLACK, main_font)
+            try:
+                write_text(SCREEN_WIDTH//2 - 200, 50, f"Top {len(fastest_wins_list)} Fastest Wins", BLACK, title_font)
+                for x in range(len(fastest_wins_list)):
+                    write_text(SCREEN_WIDTH//2 - 200, 150 + (x*100), f"Player: {fastest_wins_list[x][0]}, Time: {fastest_wins_list[x][1]} seconds", BLACK, main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 150, "No wins recorded.", BLACK, main_font)
             if leaderboard_menu_button.display(screen):
                 leaderboard_state = LeaderboardState.MENU
 
         if leaderboard_state == LeaderboardState.MOST_WINS:
             draw_bg(MENU_BG)
+            # Displays five users with the most chess wins
             most_wins_list = most_wins()
-            write_text(SCREEN_WIDTH // 2 - 300, 50, f"Top {len(most_wins_list)} Players with Most Wins", BLACK, title_font)
-            for x in range(len(most_wins_list)):
-                write_text(SCREEN_WIDTH // 2 - 200, 150 + (x * 100),
-                           f"Player: {most_wins_list[x][0]}, Wins: {most_wins_list[x][1]}", BLACK,
-                           main_font)
+            try:
+                write_text(SCREEN_WIDTH // 2 - 300, 50, f"Top {len(most_wins_list)} Players with Most Wins", BLACK, title_font)
+                for x in range(len(most_wins_list)):
+                    write_text(SCREEN_WIDTH // 2 - 200, 150 + (x * 100),
+                               f"Player: {most_wins_list[x][0]}, Wins: {most_wins_list[x][1]}", BLACK,
+                               main_font)
+            except IndexError:
+                write_text(SCREEN_WIDTH // 2 - 150, 150, "No wins recorded.", BLACK, main_font)
             if leaderboard_menu_button.display(screen):
                 leaderboard_state = LeaderboardState.MENU
 
         if leaderboard_state == LeaderboardState.ENTER_PERSONAL_STATS:
             draw_bg(MENU_BG)
             pg.draw.rect(screen, WHITE, player1_rect)
+            # Enters player name to see the personal details of
             write_text(100, 100, f"Enter Player: {player_entered}", BLACK, main_font)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
                 if event.type == pg.MOUSEBUTTONDOWN:
+                    # Can enter text when text box is clicked
                     if player1_rect.collidepoint(event.pos):
                         player_entered_active = True
                     else:
@@ -193,13 +209,15 @@ while running:
                             player_entered) < 10:
                         player_entered += event.unicode
                     elif event.key == pg.K_BACKSPACE:
+                        # Removes a character
                         if player_entered_active:
                             player_entered = player_entered[:-1]
             if view_personal_stats_button.display(screen):
-                if len(player_entered) > 0:
+                # Makes sure the player already exists
+                if len(player_entered) > 0 and does_player_exist(player_entered):
                     leaderboard_state = LeaderboardState.PERSONAL_STATS
                 else:
-                    messagebox.showerror("Details Invalid", "Please enter a player name")
+                    messagebox.showerror("Details Invalid", "Please enter an existing player name")
             if personal_stats_leaderboard_menu_button.display(screen):
                 player_entered = ""
                 player_entered_active = False
@@ -207,7 +225,9 @@ while running:
 
         if leaderboard_state == LeaderboardState.PERSONAL_STATS:
             draw_bg(MENU_BG)
+            # Displays player's number of wins, losses, stalements and their fastest win
             num_wins, num_losses, num_stalemates, fastest_win = personal_stats(player_entered)
+            # If player lacking win, loss or stalemate, then program says they have zero
             write_text(SCREEN_WIDTH // 2 - 150, 50, f"{player_entered}'s Statistics", BLACK, title_font)
             try:
                 write_text(SCREEN_WIDTH // 2 - 150, 150, f"Number of Wins: {num_wins[0]}", BLACK,
@@ -229,6 +249,7 @@ while running:
                            main_font)
             except IndexError:
                 write_text(SCREEN_WIDTH // 2 - 150, 450, "Fastest Win: None", BLACK, main_font)
+            # Erases player name entered when they back to the menu
             if leaderboard_menu_button.display(screen):
                 player_entered = ""
                 player_entered_active = False
@@ -236,6 +257,7 @@ while running:
 
     if game_state == GameState.USERNAMES:
         draw_bg(MENU_BG)
+        # Asks the user to enter two player names
         pg.draw.rect(screen, WHITE, player1_rect)
         pg.draw.rect(screen, WHITE, player2_rect)
         write_text(100, 100, f"White Player: {white_player}", BLACK, main_font)
@@ -267,13 +289,16 @@ while running:
                     elif black_player_active:
                         black_player = black_player[:-1]
                 else:
+                    # Both names can't be > 10 characters
                     if (white_player_active and len(white_player) == 10) or (black_player_active and len(black_player) == 10):
                         messagebox.showerror("Details invalid", "Player name can't be more than 10 characters")
                     elif white_player_active or black_player_active:
                         messagebox.showerror("Details invalid", "Player name can only contain numbers or letters")
         if play_game_button.display(screen):
+            # Player names can't be the same
             if white_player == black_player:
                 messagebox.showerror("Same details", "Both players can't have the same name")
+            # Player names can't be < 4 characters
             if len(white_player) < 4 or len(black_player) < 4:
                 messagebox.showerror("Details invalid", "Player name can't be less than 4 characters")
             else:
@@ -281,6 +306,7 @@ while running:
         if main_menu_button.display(screen):
             game_state = GameState.MAIN_MENU
 
+    # Sets up the game boars and sets starting turn to White
     if game_state == GameState.GAME_SETUP:
         board = Board(400, 400, board_img, pieces_images)
         for x in range(len(board.board_contents)):
@@ -293,9 +319,12 @@ while running:
 
     if game_state == GameState.IN_GAME:
         if in_game_state == InGameState.UPGRADE_PAWN:
+            # Can upgrade pawn if it reaches other side of the board
             draw_bg(GAME_BG)
             write_text(SCREEN_WIDTH // 2 - 300, 50, "Choose piece to upgrade pawn to", BLACK, title_font)
+            # Different coloured pieces used for white and black upgrades
             if current_turn == "Black":
+                # Can upgrade pawn to rook, knight, bishop or queen
                 if white_rook_button.display(screen):
                     board.upgrade_pawn(pawn_to_upgrade, current_turn, ChessPieces.ROOK)
                     in_game_state = InGameState.GAME_PLAYING
@@ -324,11 +353,13 @@ while running:
 
         if in_game_state == InGameState.GAME_PLAYING:
             draw_bg(GAME_BG)
+            # Draws chess board onscreen along with all the chess pieces
             board.display_board(screen)
             all_sprites.update()
             all_sprites.draw(screen)
             if current_turn == "White":
                 write_text(SCREEN_WIDTH//2 - 100, 50, f"{current_turn}'s Turn", WHITE, main_font)
+                # Starts timer for length of current turn for each player
                 if not timer_started:
                     start_white_time = time.perf_counter()
                     timer_started = True
@@ -342,10 +373,12 @@ while running:
         draw_bg(GAME_BG)
         board.display_board(screen)
         all_sprites.draw(screen)
+        # Tells you who won if there is a winner, otherwise it says it was a stalemate
         if winner != "":
             write_text(SCREEN_WIDTH // 2 - 100, 50, f"{winner} wins!", BLACK, main_font)
         else:
             write_text(SCREEN_WIDTH // 2 - 120, 50, f"It's a stalemate!", BLACK, main_font)
+        # Upon clicking the button the game board is cleared and you return to the main menu
         if main_menu_button.display(screen):
             chess_pieces_sprites.empty()
             all_sprites.empty()
@@ -358,6 +391,7 @@ while running:
             if event.key == pg.K_ESCAPE:
                 running = False
         if event.type == pg.MOUSEBUTTONDOWN:
+            # Can move the chess pieces upon clicking on them
             pos = pg.mouse.get_pos()
             for piece in chess_pieces_sprites:
                 if piece.rect.collidepoint(event.pos):
@@ -366,23 +400,29 @@ while running:
         if event.type == pg.MOUSEMOTION:
             pos = pg.mouse.get_pos()
             if active_piece is not None:
+                # Chess piece's coordinates are that of the mouse's when being dragged
                 active_piece.rect.center = (pos[0], pos[1])
 
         if event.type == pg.MOUSEBUTTONUP:
             pos = pg.mouse.get_pos()
+            # Sets new row and column to where your the piece on the board
             new_row = int(round((pos[1] - 181) / 62.5, 0))
             new_column = int(round((pos[0] - 181) / 62.5, 0))
             if active_piece is not None:
+                # Checks if new row and column are valid
                 what_happened = board.move_piece(active_piece, new_row, new_column, current_turn)
                 if what_happened == "Success":
+                    # Moves piece to new position and updates its position on the chess board screen and in the 2d list
                     old_row = active_piece.row
                     old_column = active_piece.column
                     board.board_contents[new_row][new_column] = active_piece
                     active_piece.row = new_row
                     active_piece.column = new_column
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
+                    # Old position in the list becomes blank
                     board.board_contents[old_row][old_column] = None
                     if current_turn == "White":
+                        # Ends timer for the current turn and adds it onto the overall time taken for each player
                         end_white_time = time.perf_counter()
                         white_time += round(end_white_time - start_white_time, 2)
                     else:
@@ -390,6 +430,7 @@ while running:
                         black_time += round(end_black_time - start_black_time, 2)
                     timer_started = False
                     if board.in_checkmate(current_turn):
+                        # Write results to the CSV file after a checkmate or stalemate
                         winner = current_turn
                         if current_turn == "White":
                             write_results(white_player, "Yes", round(white_time, 2), black_player, "No", round(black_time, 2))
@@ -400,11 +441,14 @@ while running:
                         game_state = GameState.POST_GAME
                         write_results(white_player, "Draw", white_time, black_player, "Draw", black_time)
                     if active_piece.piece_type == ChessPieces.PAWN:
+                        # Pawn will upgrade if it reaches other end of the game board
                         if current_turn == "White" and new_row == 0 or current_turn == "Black" and new_row == 7:
                             pawn_to_upgrade = active_piece
                             in_game_state = InGameState.UPGRADE_PAWN
+                    # Current turn is changed after a success turn
                     current_turn = "White" if current_turn == "Black" else "Black"
                 if what_happened == "Failed":
+                    # Chess piece will return back to it's original position if move fails
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
                 active_piece = None
 
