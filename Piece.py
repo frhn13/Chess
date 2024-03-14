@@ -12,6 +12,7 @@ class Piece(pg.sprite.Sprite):
         self.column = column
         self.has_moved = False
         self.is_blocked = False
+        self.first_move = False
         if image is not None:
             self.image = image
             self.rect = self.image.get_rect()
@@ -96,6 +97,15 @@ class Piece(pg.sprite.Sprite):
                         return True
                     elif new_row == self.row + 2 and self.row == 1 and new_column == self.column and new_space is None:
                         return True
+                    elif new_row == self.row + 1 and new_row == 5 and (
+                            (new_column == self.column + 1 and board_contents[4][self.column + 1] is not None and
+                             board_contents[4][self.column + 1].piece_type == ChessPieces.PAWN and
+                             board_contents[4][self.column + 1].first_move and board_contents[4][self.column + 1].colour != self.colour)
+                            or (new_column == self.column - 1 and board_contents[4][self.column - 1] is not None and
+                             board_contents[4][self.column - 1].piece_type == ChessPieces.PAWN and
+                             board_contents[4][self.column - 1].first_move and board_contents[4][self.column - 1].colour != self.colour)) \
+                            and new_space is None:
+                        return True
                     else:
                         return False
                 else:
@@ -105,6 +115,15 @@ class Piece(pg.sprite.Sprite):
                             new_column == self.column + 1 or new_column == self.column - 1) and new_space is not None:
                         return True
                     elif new_row == self.row - 2 and self.row == 6 and new_column == self.column and new_space is None:
+                        return True
+                    elif new_row == self.row - 1 and new_row == 2 and (
+                            (new_column == self.column + 1 and board_contents[3][self.column + 1] is not None and
+                             board_contents[3][self.column + 1].piece_type == ChessPieces.PAWN and
+                             board_contents[3][self.column + 1].first_move and board_contents[3][self.column + 1].colour != self.colour)
+                            or (new_column == self.column - 1 and board_contents[3][self.column - 1] is not None and
+                             board_contents[3][self.column - 1].piece_type == ChessPieces.PAWN and
+                             board_contents[3][self.column - 1].first_move and board_contents[3][self.column - 1].colour != self.colour)) \
+                            and new_space is None:
                         return True
                     else:
                         return False
@@ -116,8 +135,6 @@ class Piece(pg.sprite.Sprite):
             else:
                 return False
         elif self.piece_type == ChessPieces.KING:
-            print(f"{new_row} {self.row}")
-            print(f"{new_column} {self.column}")
             if abs(new_row - self.row) <= 1 and abs(new_column - self.column) <= 1:
                 return True
             if new_row == self.row and new_column == 6 and board_contents[self.row][5] is None and \

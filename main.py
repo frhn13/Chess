@@ -421,6 +421,7 @@ while running:
                     active_piece.rect.center = (181 + (62.5 * active_piece.column), 181 + (62.5 * active_piece.row))
                     # Old position in the list becomes blank
                     board.board_contents[old_row][old_column] = None
+                    # Does castling if king moves to the right
                     if active_piece.piece_type == ChessPieces.KING and old_column == 4 and new_column == 6 and new_row == old_row:
                         rook_piece = board.board_contents[old_row][7]
                         rook_piece.row = old_row
@@ -428,6 +429,7 @@ while running:
                         board.board_contents[old_row][5] = rook_piece
                         rook_piece.rect.center = (181 + (62.5 * 5), 181 + (62.5 * old_row))
                         board.board_contents[old_row][7] = None
+                    # Does castling if king moves to the left
                     if active_piece.piece_type == ChessPieces.KING and old_column == 4 and new_column == 2 and new_row == old_row:
                         rook_piece = board.board_contents[old_row][0]
                         rook_piece.row = old_row

@@ -102,19 +102,36 @@ class Board:
             elif piece.piece_type != ChessPieces.KING and self.will_put_king_in_check(piece, new_row, new_column, current_turn):
                 return "Failed"
             else:
-                # Moves enemy piece if new move can go there
+                piece_removed = False
+                # Kills enemy piece if new move can go there
                 if self.board_contents[new_row][new_column] is not None and \
                         self.board_contents[new_row][new_column].colour != piece.colour:
                     self.board_contents[new_row][new_column].kill()
+                    piece_removed = True
+                # Kills enemy piece by ampersand
+                if piece.piece_type == ChessPieces.PAWN and current_turn == "White" and piece.row == new_row + 1 \
+                        and (piece.column == new_column - 1 or piece.column == new_column + 1) and self.board_contents[new_row][new_column] is None:
+                    self.board_contents[piece.row][new_column].kill()
+                    piece_removed = True
+                if piece.piece_type == ChessPieces.PAWN and current_turn == "Black" and piece.row == new_row - 1 \
+                        and (piece.column == new_column - 1 or piece.column == new_column + 1) and \
+                        self.board_contents[new_row][new_column] is None:
+                    self.board_contents[piece.row][new_column].kill()
+                    piece_removed = True
+
+                if piece_removed:
                     if piece.colour == "Black":
                         self.no_white_pieces -= 1
                     else:
                         self.no_black_pieces -= 1
                 if piece.piece_type == ChessPieces.KING:
+                    # Updates the position of both kings
                     if piece.colour == "White":
                         self.white_king_pos = (new_row, new_column)
                     else:
                         self.black_king_pos = (new_row, new_column)
+                if not piece.has_moved:  # Piece makes its first move if it hasn't moved, used for ampersands
+                    piece.first_move = True
                 piece.has_moved = True
                 return "Success"  # Returns that a piece has moved
         except IndexError:
@@ -124,6 +141,8 @@ class Board:
         # Loops through each piece on the board checks if it is a pawn that can't move in front of its location
         for i in range(len(self.board_contents)):
             for j in range(len(self.board_contents[0])):
+                if self.board_contents[i][j] is not None and self.board_contents[i][j].colour == current_turn:
+                    self.board_contents[i][j].first_move = False
                 if self.board_contents[i][j] is not None and self.board_contents[i][j].piece_type == ChessPieces.PAWN and self.board_contents[i][j].colour == current_turn:
                     if (current_turn == "White" and self.board_contents[i-1][j] is not None) or (current_turn == "Black" and self.board_contents[i+1][j] is not None):
                         self.board_contents[i][j].is_blocked = True
